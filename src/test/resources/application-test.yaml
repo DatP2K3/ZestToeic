@@ -1,0 +1,27 @@
+# Test profile — use embedded/in-memory where possible
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/zesttoeic_test
+    redis:
+      host: localhost
+      port: 6379
+  datasource:
+    url: jdbc:postgresql://localhost:5433/zesttoeic_test
+    username: zest
+    password: zest_secret
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+jwt:
+  secret: test-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+logging:
+  level:
+    com.zest.toeic: WARN

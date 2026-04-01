@@ -1,13 +1,14 @@
-package com.zest.toeic.master;
+package com.zest.toeic;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-class MasterApplicationTests {
+@ActiveProfiles("test")
+class ZestToeicApplicationTests {
 
     @Test
     void contextLoads() {
     }
-
 }
