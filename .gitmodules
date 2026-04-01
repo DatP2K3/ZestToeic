@@ -1,0 +1,9 @@
+[submodule "_upstream/bmad-method"]
+	path = _upstream/bmad-method
+	url = https://github.com/bmad-code-org/BMAD-METHOD.git
+[submodule "_upstream/superpowers"]
+	path = _upstream/superpowers
+	url = https://github.com/obra/superpowers.git
+[submodule "_upstream/antigravity-kit"]
+	path = _upstream/antigravity-kit
+	url = https://github.com/vudovn/antigravity-kit.git

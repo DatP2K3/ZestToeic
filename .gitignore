@@ -1,0 +1,64 @@
+# Git Ignore — fun5
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build
+target/
+build/
+dist/
+node_modules/
+.gradle/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# Frontend
+.next/
+.nuxt/
+.output/
+
+# Env / Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+.nyc_output/
+htmlcov/
+
+# Temp
+tmp/
+*.tmp
+*.swp
+*~
+
+.DS_Store
