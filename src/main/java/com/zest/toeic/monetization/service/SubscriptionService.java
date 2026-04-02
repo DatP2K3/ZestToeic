@@ -1,7 +1,7 @@
 package com.zest.toeic.monetization.service;
 
-import com.zest.toeic.auth.model.User;
-import com.zest.toeic.auth.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
+import com.zest.toeic.monetization.event.SubscriptionUpdatedEvent;
 import com.zest.toeic.monetization.model.Subscription;
 import com.zest.toeic.monetization.repository.SubscriptionRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
@@ -17,14 +17,14 @@ public class SubscriptionService {
     private static final long PREMIUM_PRICE_VND = 99000;
 
     private final SubscriptionRepository subscriptionRepository;
-    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final VNPayService vnPayService;
 
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
-                               UserRepository userRepository,
+                               ApplicationEventPublisher eventPublisher,
                                VNPayService vnPayService) {
         this.subscriptionRepository = subscriptionRepository;
-        this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
         this.vnPayService = vnPayService;
     }
 
@@ -44,9 +44,6 @@ public class SubscriptionService {
     }
 
     public Subscription activatePremium(String userId, String transactionId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
-
         Subscription subscription = Subscription.builder()
                 .userId(userId)
                 .plan("PREMIUM")
@@ -58,8 +55,7 @@ public class SubscriptionService {
                 .lastTransactionId(transactionId)
                 .build();
 
-        user.setSubscriptionTier("PREMIUM");
-        userRepository.save(user);
+        eventPublisher.publishEvent(new SubscriptionUpdatedEvent(userId, "PREMIUM"));
 
         return subscriptionRepository.save(subscription);
     }
@@ -71,11 +67,7 @@ public class SubscriptionService {
         sub.setAutoRenew(false);
         sub.setStatus("CANCELLED");
 
-        User user = userRepository.findById(userId).orElse(null);
-        if (user != null) {
-            user.setSubscriptionTier("FREE");
-            userRepository.save(user);
-        }
+        eventPublisher.publishEvent(new SubscriptionUpdatedEvent(userId, "FREE"));
 
         return subscriptionRepository.save(sub);
     }

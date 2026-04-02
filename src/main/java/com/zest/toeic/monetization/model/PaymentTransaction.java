@@ -4,6 +4,8 @@ import com.zest.toeic.shared.model.BaseDocument;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import org.springframework.data.mongodb.core.index.Indexed;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -12,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "payment_transactions")
 public class PaymentTransaction extends BaseDocument {
 
+    @Indexed
     private String userId;
     private String subscriptionId;
     private long amount; // in VND

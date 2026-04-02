@@ -1,7 +1,8 @@
 package com.zest.toeic.monetization.service;
 
+import org.springframework.context.ApplicationEventPublisher;
+import com.zest.toeic.monetization.event.SubscriptionUpdatedEvent;
 import com.zest.toeic.auth.model.User;
-import com.zest.toeic.auth.repository.UserRepository;
 import com.zest.toeic.monetization.model.Subscription;
 import com.zest.toeic.monetization.repository.SubscriptionRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
@@ -28,7 +29,7 @@ class SubscriptionServiceTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private VNPayService vnPayService;
@@ -90,7 +91,6 @@ class SubscriptionServiceTest {
 
     @Test
     void activatePremium_shouldUpdateUserAndCreateSubscription() {
-        when(userRepository.findById("u1")).thenReturn(Optional.of(mockUser));
         when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(i -> i.getArgument(0));
 
         Subscription sub = subscriptionService.activatePremium("u1", "txn123");
@@ -100,23 +100,20 @@ class SubscriptionServiceTest {
         assertEquals("VNPAY", sub.getPaymentMethod());
         assertEquals("txn123", sub.getLastTransactionId());
         
-        verify(userRepository).save(mockUser);
-        assertEquals("PREMIUM", mockUser.getSubscriptionTier());
+        verify(eventPublisher).publishEvent(any(SubscriptionUpdatedEvent.class));
     }
 
     @Test
     void cancelSubscription_shouldSetCancelledAndAutoRenewFalse() {
         when(subscriptionRepository.findByUserIdAndStatus("u1", "ACTIVE"))
                 .thenReturn(Optional.of(activePremium));
-        when(userRepository.findById("u1")).thenReturn(Optional.of(mockUser));
         when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(i -> i.getArgument(0));
 
         Subscription sub = subscriptionService.cancelSubscription("u1");
 
         assertFalse(sub.isAutoRenew());
         assertEquals("CANCELLED", sub.getStatus());
-        assertEquals("FREE", mockUser.getSubscriptionTier());
-        verify(userRepository).save(mockUser);
+        verify(eventPublisher).publishEvent(any(SubscriptionUpdatedEvent.class));
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.zest.toeic.battle;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.Instant;
 
@@ -15,7 +16,9 @@ public class BattleParticipant {
 
     @Id
     private String id;
+    @Indexed
     private String battleId;
+    @Indexed
     private String userId;
     private String displayName;
 

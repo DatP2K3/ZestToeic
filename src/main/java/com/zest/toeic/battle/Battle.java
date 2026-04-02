@@ -2,6 +2,7 @@ package com.zest.toeic.battle;
 
 import com.zest.toeic.shared.model.BaseDocument;
 import lombok.*;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -17,6 +18,7 @@ public class Battle extends BaseDocument {
 
     private String title;
 
+    @Indexed
     @Builder.Default
     private String status = "SCHEDULED"; // SCHEDULED, REGISTRATION, IN_PROGRESS, COMPLETED
 
