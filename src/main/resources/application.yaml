@@ -1,62 +1,14 @@
-server:
-  port: 8080
-
 spring:
   application:
     name: zesttoeic-api
-
-  # ═══════ MongoDB (Primary DB) ═══════
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/zesttoeic?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000
-    redis:
-      host: localhost
-      port: 6379
-      timeout: 5s
-
-  # ═══════ PostgreSQL (ACID - Payments/Audit) ═══════
-  datasource:
-    url: jdbc:postgresql://localhost:5433/zesttoeic
-    username: zest
-    password: zest_secret
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      connection-timeout: 5000
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    open-in-view: false
-
-  # ═══════ RabbitMQ ═══════
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-    connection-timeout: 5000
-
-  # ═══════ Email (Gmail SMTP) ═══════
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: testmailsender2k3@gmail.com
-    password: haqtzbznucuwhzkr
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  profiles:
+    active: dev
 
 # ═══════ JWT Configuration ═══════
 jwt:
-  secret: zesttoeic-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
-  access-token-expiration: 900000      # 15 minutes (ms)
-  refresh-token-expiration: 604800000  # 7 days (ms)
+  secret: ${JWT_SECRET}
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
 
 # ═══════ API Documentation ═══════
 springdoc:
@@ -80,21 +32,12 @@ management:
 # ═══════ AI Configuration ═══════
 ai:
   gemini:
-    api-key: ${GEMINI_API_KEY:AIzaSyCScXUBJ3SQb2pyaiInB1J_o0arZF3Dd6k}
+    api-key: ${GEMINI_API_KEY}
     model: gemini-2.5-flash
     base-url: https://generativelanguage.googleapis.com/v1beta
 
-# ═══════ Logging ═══════
-logging:
-  level:
-    com.zest.toeic: DEBUG
-    org.springframework.data.mongodb: WARN
-    org.springframework.security: WARN
-
-# ═══════ VNPay (Sandbox) ═══════
+# ═══════ VNPay ═══════
 vnpay:
-  tmn-code: ${VNPAY_TMN_CODE:16SKKA9R}
-  hash-secret: ${VNPAY_HASH_SECRET:YQO68HVCAQX9YQCT10Y8BTYTLAGTOIAH}
+  tmn-code: ${VNPAY_TMN_CODE}
+  hash-secret: ${VNPAY_HASH_SECRET}
   pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-  return-url: ${VNPAY_RETURN_URL:http://localhost:8080/api/v1/payment/vnpay-return}
-

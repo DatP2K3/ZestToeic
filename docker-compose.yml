@@ -3,15 +3,10 @@ services:
     build: .
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/zesttoeic
-      SPRING_DATASOURCE_URL: jdbc:postgresql://pg:5432/zesttoeic
-      SPRING_DATASOURCE_USERNAME: zest
-      SPRING_DATASOURCE_PASSWORD: zest_secret
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_RABBITMQ_HOST: rabbit
-      JWT_SECRET: zesttoeic-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
+      SPRING_PROFILES_ACTIVE: prod
     depends_on:
       mongo:
         condition: service_started
@@ -33,10 +28,10 @@ services:
     image: postgres:16-alpine
     ports:
       - "5433:5432"
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: zesttoeic
-      POSTGRES_USER: zest
-      POSTGRES_PASSWORD: zest_secret
     volumes:
       - pg-data:/var/lib/postgresql/data
     healthcheck:
