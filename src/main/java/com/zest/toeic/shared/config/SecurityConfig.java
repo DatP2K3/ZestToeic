@@ -35,6 +35,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/questions/**").permitAll()
                         // VNPay callbacks (server-to-server)
                         .requestMatchers("/api/v1/payment/vnpay-ipn", "/api/v1/payment/vnpay-return").permitAll()
+                        // WebSocket handshake
+                        .requestMatchers("/ws/**").permitAll()
                         // Admin endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         // All other endpoints require authentication
