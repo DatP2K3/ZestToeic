@@ -1,15 +1,30 @@
 package com.zest.toeic.shared.config;
 
+import com.zest.toeic.shared.security.PremiumInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
-public class WebConfig {
+public class WebConfig implements WebMvcConfigurer {
+
+    private final PremiumInterceptor premiumInterceptor;
+
+    public WebConfig(PremiumInterceptor premiumInterceptor) {
+        this.premiumInterceptor = premiumInterceptor;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(premiumInterceptor)
+                .addPathPatterns("/api/**");
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -25,3 +40,4 @@ public class WebConfig {
         return source;
     }
 }
+

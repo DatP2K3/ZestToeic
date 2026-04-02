@@ -1,0 +1,85 @@
+package com.zest.toeic.community.controller;
+
+import com.zest.toeic.community.model.ForumComment;
+import com.zest.toeic.community.model.ForumPost;
+import com.zest.toeic.community.service.ForumService;
+import com.zest.toeic.shared.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/forum")
+@Tag(name = "Forum", description = "Discussion Forum & Q&A")
+public class ForumController {
+
+    private final ForumService forumService;
+
+    public ForumController(ForumService forumService) {
+        this.forumService = forumService;
+    }
+
+    @PostMapping("/posts")
+    @Operation(summary = "Tạo bài viết mới (Discussion hoặc Q&A)")
+    public ResponseEntity<ApiResponse<ForumPost>> createPost(
+            Authentication auth, @RequestBody Map<String, Object> body) {
+        String title = (String) body.get("title");
+        String content = (String) body.get("content");
+        String type = (String) body.getOrDefault("type", "DISCUSSION");
+        @SuppressWarnings("unchecked")
+        List<String> tags = (List<String>) body.get("tags");
+        return ResponseEntity.ok(ApiResponse.success(
+                forumService.createPost(auth.getName(), auth.getName(), title, content, type, tags)));
+    }
+
+    @GetMapping("/posts")
+    @Operation(summary = "Danh sách bài viết (phân trang, filter)")
+    public ResponseEntity<ApiResponse<Page<ForumPost>>> getPosts(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String tag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.success(forumService.getPosts(type, tag, page, size)));
+    }
+
+    @GetMapping("/posts/{id}")
+    @Operation(summary = "Chi tiết bài viết")
+    public ResponseEntity<ApiResponse<ForumPost>> getPost(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.success(forumService.getPost(id)));
+    }
+
+    @PostMapping("/posts/{id}/upvote")
+    @Operation(summary = "Upvote bài viết")
+    public ResponseEntity<ApiResponse<ForumPost>> upvotePost(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.success(forumService.upvotePost(id)));
+    }
+
+    @PostMapping("/posts/{postId}/comments")
+    @Operation(summary = "Thêm comment (support threaded reply)")
+    public ResponseEntity<ApiResponse<ForumComment>> addComment(
+            Authentication auth, @PathVariable String postId, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(ApiResponse.success(
+                forumService.addComment(postId, auth.getName(), auth.getName(),
+                        body.get("content"), body.get("parentId"))));
+    }
+
+    @GetMapping("/posts/{postId}/comments")
+    @Operation(summary = "Danh sách comments của bài viết")
+    public ResponseEntity<ApiResponse<List<ForumComment>>> getComments(@PathVariable String postId) {
+        return ResponseEntity.ok(ApiResponse.success(forumService.getComments(postId)));
+    }
+
+    @PostMapping("/posts/{postId}/best-answer/{commentId}")
+    @Operation(summary = "Đánh dấu câu trả lời hay nhất (Q&A only)")
+    public ResponseEntity<ApiResponse<ForumPost>> markBestAnswer(
+            Authentication auth, @PathVariable String postId, @PathVariable String commentId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                forumService.markBestAnswer(postId, commentId, auth.getName())));
+    }
+}
