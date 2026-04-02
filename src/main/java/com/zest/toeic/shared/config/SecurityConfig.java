@@ -33,6 +33,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/questions/**").permitAll()
+                        // VNPay callbacks (server-to-server)
+                        .requestMatchers("/api/v1/payment/vnpay-ipn", "/api/v1/payment/vnpay-return").permitAll()
                         // Admin endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         // All other endpoints require authentication

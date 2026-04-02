@@ -1,5 +1,6 @@
 package com.zest.toeic.practice.controller;
 
+import com.zest.toeic.practice.dto.AnswerHistoryResponse;
 import com.zest.toeic.practice.dto.AnswerResult;
 import com.zest.toeic.practice.dto.SubmitAnswerRequest;
 import com.zest.toeic.practice.model.Question;
@@ -50,5 +51,16 @@ public class PracticeController {
         String userId = authentication.getName();
         AnswerResult result = practiceService.submitAnswer(userId, request);
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    @GetMapping("/answers/history")
+    @Operation(summary = "Lịch sử trả lời + thống kê accuracy per Part")
+    public ResponseEntity<ApiResponse<AnswerHistoryResponse>> getAnswerHistory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        AnswerHistoryResponse history = practiceService.getAnswerHistory(userId, page, size);
+        return ResponseEntity.ok(ApiResponse.success(history));
     }
 }
