@@ -7,6 +7,7 @@ import com.zest.toeic.community.model.Friend;
 import com.zest.toeic.community.repository.FriendRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.FriendStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +65,7 @@ class FriendServiceTest {
     void sendRequest_AlreadyExists_ThrowsBadRequest() {
         when(userRepository.findById("user2")).thenReturn(Optional.of(mockUser));
         when(friendRepository.findBetweenUsers("user1", "user2"))
-                .thenReturn(Optional.of(Friend.builder().status("PENDING").build()));
+                .thenReturn(Optional.of(Friend.builder().status(FriendStatus.PENDING).build()));
 
         assertThrows(BadRequestException.class,
                 () -> friendService.sendRequest("user1", "user2"));
@@ -80,12 +81,12 @@ class FriendServiceTest {
 
         assertEquals("user1", result.getSenderId());
         assertEquals("user2", result.getReceiverId());
-        assertEquals("PENDING", result.getStatus());
+        assertEquals(FriendStatus.PENDING, result.getStatus());
     }
 
     @Test
     void acceptRequest_NotReceiver_ThrowsBadRequest() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user3").status("PENDING").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user3").status(FriendStatus.PENDING).build();
         friend.setId("req1");
         when(friendRepository.findById("req1")).thenReturn(Optional.of(friend));
 
@@ -95,7 +96,7 @@ class FriendServiceTest {
 
     @Test
     void acceptRequest_NotPending_ThrowsBadRequest() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status("ACCEPTED").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status(FriendStatus.ACCEPTED).build();
         friend.setId("req1");
         when(friendRepository.findById("req1")).thenReturn(Optional.of(friend));
 
@@ -105,19 +106,19 @@ class FriendServiceTest {
 
     @Test
     void acceptRequest_Success() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status("PENDING").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status(FriendStatus.PENDING).build();
         friend.setId("req1");
         when(friendRepository.findById("req1")).thenReturn(Optional.of(friend));
         when(friendRepository.save(any(Friend.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Friend result = friendService.acceptRequest("user2", "req1");
 
-        assertEquals("ACCEPTED", result.getStatus());
+        assertEquals(FriendStatus.ACCEPTED, result.getStatus());
     }
 
     @Test
     void rejectRequest_Success() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status("PENDING").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status(FriendStatus.PENDING).build();
         friend.setId("req1");
         when(friendRepository.findById("req1")).thenReturn(Optional.of(friend));
 
@@ -128,7 +129,7 @@ class FriendServiceTest {
 
     @Test
     void unfriend_NotInFriendship_ThrowsBadRequest() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status("ACCEPTED").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status(FriendStatus.ACCEPTED).build();
         friend.setId("f1");
         when(friendRepository.findById("f1")).thenReturn(Optional.of(friend));
 
@@ -138,7 +139,7 @@ class FriendServiceTest {
 
     @Test
     void unfriend_Success() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status("ACCEPTED").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status(FriendStatus.ACCEPTED).build();
         friend.setId("f1");
         when(friendRepository.findById("f1")).thenReturn(Optional.of(friend));
 
@@ -149,7 +150,7 @@ class FriendServiceTest {
 
     @Test
     void getFriends_ReturnsFriendInfoList() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status("ACCEPTED").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("user2").status(FriendStatus.ACCEPTED).build();
         when(friendRepository.findAcceptedFriends("user1")).thenReturn(List.of(friend));
         when(userRepository.findById("user2")).thenReturn(Optional.of(mockUser));
 
@@ -163,7 +164,7 @@ class FriendServiceTest {
 
     @Test
     void getFriends_DeletedUser_ReturnsPlaceholder() {
-        Friend friend = Friend.builder().senderId("user1").receiverId("deleted-user").status("ACCEPTED").build();
+        Friend friend = Friend.builder().senderId("user1").receiverId("deleted-user").status(FriendStatus.ACCEPTED).build();
         when(friendRepository.findAcceptedFriends("user1")).thenReturn(List.of(friend));
         when(userRepository.findById("deleted-user")).thenReturn(Optional.empty());
 
@@ -175,13 +176,13 @@ class FriendServiceTest {
 
     @Test
     void getPendingRequests_Success() {
-        Friend friend = Friend.builder().senderId("user2").receiverId("user1").status("PENDING").build();
-        when(friendRepository.findByReceiverIdAndStatus("user1", "PENDING")).thenReturn(List.of(friend));
+        Friend friend = Friend.builder().senderId("user2").receiverId("user1").status(FriendStatus.PENDING).build();
+        when(friendRepository.findByReceiverIdAndStatus("user1", FriendStatus.PENDING)).thenReturn(List.of(friend));
         when(userRepository.findById("user2")).thenReturn(Optional.of(mockUser));
 
         List<FriendInfo> result = friendService.getPendingRequests("user1");
 
         assertEquals(1, result.size());
-        assertEquals("PENDING", result.get(0).getStatus());
+        assertEquals(FriendStatus.PENDING, result.get(0).getStatus());
     }
 }

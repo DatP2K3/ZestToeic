@@ -2,6 +2,8 @@ package com.zest.toeic.practice.seed;
 
 import com.zest.toeic.practice.model.Question;
 import com.zest.toeic.practice.repository.QuestionRepository;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -22,8 +24,8 @@ public class QuestionSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (questionRepository.countByStatus("PUBLISHED") > 0) {
-            log.info("Questions already seeded, skipping. Count: {}", questionRepository.countByStatus("PUBLISHED"));
+        if (questionRepository.countByStatus(QuestionStatus.PUBLISHED) > 0) {
+            log.info("Questions already seeded, skipping. Count: {}", questionRepository.countByStatus(QuestionStatus.PUBLISHED));
             return;
         }
 
@@ -329,10 +331,10 @@ public class QuestionSeeder implements CommandLineRunner {
                 .content(content)
                 .options(options)
                 .correctAnswer(correct)
-                .difficulty(difficulty)
+                .difficulty(QuestionDifficulty.valueOf(difficulty.toUpperCase()))
                 .category(category)
                 .explanation(explanation)
-                .status("PUBLISHED")
+                .status(QuestionStatus.PUBLISHED)
                 .source("manual")
                 .build();
     }
@@ -351,10 +353,10 @@ public class QuestionSeeder implements CommandLineRunner {
                 .content(content)
                 .options(options)
                 .correctAnswer(correct)
-                .difficulty(difficulty)
+                .difficulty(QuestionDifficulty.valueOf(difficulty.toUpperCase()))
                 .category(category)
                 .explanation(explanation)
-                .status("PUBLISHED")
+                .status(QuestionStatus.PUBLISHED)
                 .source("manual")
                 .build();
     }

@@ -3,12 +3,15 @@ package com.zest.toeic.admin.service;
 import com.zest.toeic.practice.model.Question;
 import com.zest.toeic.practice.repository.QuestionRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AdminQuestionService {
 
     private final QuestionRepository questionRepository;
@@ -21,17 +24,17 @@ public class AdminQuestionService {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         if (part != null && status != null) {
-            return questionRepository.findByPartAndStatus(part, status, pageable);
+            return questionRepository.findByPartAndStatus(part, QuestionStatus.valueOf(status.toUpperCase()), pageable);
         } else if (part != null) {
             return questionRepository.findByPart(part, pageable);
         } else if (status != null) {
-            return questionRepository.findByStatus(status, pageable);
+            return questionRepository.findByStatus(QuestionStatus.valueOf(status.toUpperCase()), pageable);
         }
         return questionRepository.findAll(pageable);
     }
 
     public Question createQuestion(Question question) {
-        question.setStatus("PENDING");
+        question.setStatus(QuestionStatus.PENDING);
         return questionRepository.save(question);
     }
 
@@ -60,14 +63,14 @@ public class AdminQuestionService {
     public Question approveQuestion(String id) {
         Question q = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found: " + id));
-        q.setStatus("PUBLISHED");
+        q.setStatus(QuestionStatus.PUBLISHED);
         return questionRepository.save(q);
     }
 
     public Question rejectQuestion(String id) {
         Question q = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found: " + id));
-        q.setStatus("REJECTED");
+        q.setStatus(QuestionStatus.REJECTED);
         return questionRepository.save(q);
     }
 }

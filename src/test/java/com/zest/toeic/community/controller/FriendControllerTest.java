@@ -5,6 +5,7 @@ import com.zest.toeic.community.dto.FriendInfo;
 import com.zest.toeic.community.model.Friend;
 import com.zest.toeic.community.service.FriendService;
 import com.zest.toeic.shared.exception.GlobalExceptionHandler;
+import com.zest.toeic.shared.model.enums.FriendStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +50,7 @@ class FriendControllerTest {
     @Test
     void sendRequest_Success() throws Exception {
         Friend friend = Friend.builder()
-                .senderId("user1").receiverId("user2").status("PENDING").build();
+                .senderId("user1").receiverId("user2").status(FriendStatus.PENDING).build();
         when(friendService.sendRequest("user1", "user2")).thenReturn(friend);
 
         mockMvc.perform(post("/api/v1/friends/request")
@@ -65,7 +66,7 @@ class FriendControllerTest {
     @Test
     void acceptRequest_Success() throws Exception {
         Friend friend = Friend.builder()
-                .senderId("user2").receiverId("user1").status("ACCEPTED").build();
+                .senderId("user2").receiverId("user1").status(FriendStatus.ACCEPTED).build();
         when(friendService.acceptRequest("user1", "req1")).thenReturn(friend);
 
         mockMvc.perform(post("/api/v1/friends/accept/req1")
@@ -100,7 +101,7 @@ class FriendControllerTest {
     @Test
     void getFriends_Success() throws Exception {
         List<FriendInfo> friends = List.of(
-                FriendInfo.builder().friendId("user2").displayName("Alice").level(3).status("ACCEPTED").build()
+                FriendInfo.builder().friendId("user2").displayName("Alice").level(3).status(FriendStatus.ACCEPTED).build()
         );
         when(friendService.getFriends("user1")).thenReturn(friends);
 
@@ -114,7 +115,7 @@ class FriendControllerTest {
     @Test
     void getPendingRequests_Success() throws Exception {
         List<FriendInfo> pending = List.of(
-                FriendInfo.builder().friendId("user3").displayName("Bob").status("PENDING").build()
+                FriendInfo.builder().friendId("user3").displayName("Bob").status(FriendStatus.PENDING).build()
         );
         when(friendService.getPendingRequests("user1")).thenReturn(pending);
 

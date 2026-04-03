@@ -1,6 +1,7 @@
 package com.zest.toeic.gamification.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.QuestType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,7 +40,7 @@ public class DailyQuest extends BaseDocument {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Quest {
-        private String type;       // PRACTICE_QUESTIONS, REVIEW_FLASHCARDS, COMPLETE_TEST
+        private QuestType type;
         private String description;
         private int target;
         private int progress;

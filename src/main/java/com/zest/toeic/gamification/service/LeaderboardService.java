@@ -10,11 +10,13 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.util.*;
 
 @Service
+@Transactional(readOnly = true)
 public class LeaderboardService {
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");

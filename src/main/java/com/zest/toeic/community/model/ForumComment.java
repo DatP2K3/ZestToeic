@@ -1,14 +1,17 @@
 package com.zest.toeic.community.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.ForumPostStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,5 +37,5 @@ public class ForumComment extends BaseDocument {
     private boolean isBestAnswer = false;
 
     @Builder.Default
-    private String status = "PUBLISHED"; // PUBLISHED, HIDDEN, DELETED
+    private ForumPostStatus status = ForumPostStatus.PUBLISHED;
 }

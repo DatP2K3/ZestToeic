@@ -1,6 +1,9 @@
 package com.zest.toeic.auth.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.SubscriptionTier;
+import com.zest.toeic.shared.model.enums.UserRole;
+import com.zest.toeic.shared.model.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,13 +34,13 @@ public class User extends BaseDocument {
     private long totalXp = 0;
 
     @Builder.Default
-    private String subscriptionTier = "FREE";
+    private SubscriptionTier subscriptionTier = SubscriptionTier.FREE;
 
     @Builder.Default
-    private String role = "USER";
+    private UserRole role = UserRole.USER;
 
     @Builder.Default
-    private String status = "ACTIVE";
+    private UserStatus status = UserStatus.ACTIVE;
 
     @Builder.Default
     private int streakCurrent = 0;

@@ -2,6 +2,7 @@ package com.zest.toeic.practice.controller;
 
 import com.zest.toeic.practice.dto.StartTestRequest;
 import com.zest.toeic.practice.dto.TestAnswerRequest;
+import com.zest.toeic.practice.dto.TestAnswerResponse;
 import com.zest.toeic.practice.dto.TestResult;
 import com.zest.toeic.practice.model.TestSession;
 import com.zest.toeic.practice.service.TestService;
@@ -14,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/tests")
@@ -53,11 +52,11 @@ public class TestController {
 
     @PostMapping("/{testId}/answer")
     @Operation(summary = "Submit câu trả lời trong test")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> submitAnswer(
+    public ResponseEntity<ApiResponse<TestAnswerResponse>> submitAnswer(
+            Authentication auth,
             @PathVariable String testId,
-            @Valid @RequestBody TestAnswerRequest request,
-            Authentication auth) {
-        Map<String, Object> result = testService.submitTestAnswer(auth.getName(), testId, request);
+            @Valid @RequestBody TestAnswerRequest request) {
+        TestAnswerResponse result = testService.submitTestAnswer(auth.getName(), testId, request);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

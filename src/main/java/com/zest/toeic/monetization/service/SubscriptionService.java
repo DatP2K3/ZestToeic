@@ -7,11 +7,13 @@ import com.zest.toeic.monetization.repository.SubscriptionRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Service
+@Transactional
 public class SubscriptionService {
 
     private static final long PREMIUM_PRICE_VND = 99000;

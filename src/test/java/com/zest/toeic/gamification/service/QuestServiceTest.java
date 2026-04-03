@@ -3,6 +3,7 @@ package com.zest.toeic.gamification.service;
 import com.zest.toeic.gamification.model.DailyQuest;
 import com.zest.toeic.gamification.repository.DailyQuestRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
+import com.zest.toeic.shared.model.enums.QuestType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,15 +38,15 @@ class QuestServiceTest {
     void setUp() {
         List<DailyQuest.Quest> quests = new ArrayList<>(List.of(
                 DailyQuest.Quest.builder()
-                        .type("PRACTICE_QUESTIONS").description("Trả lời 10 câu hỏi")
+                        .type(QuestType.PRACTICE_QUESTIONS).description("Trả lời 10 câu hỏi")
                         .target(10).progress(0).completed(false).claimed(false).xpReward(50)
                         .build(),
                 DailyQuest.Quest.builder()
-                        .type("REVIEW_FLASHCARDS").description("Ôn 5 flashcards")
+                        .type(QuestType.REVIEW_FLASHCARDS).description("Ôn 5 flashcards")
                         .target(5).progress(0).completed(false).claimed(false).xpReward(30)
                         .build(),
                 DailyQuest.Quest.builder()
-                        .type("COMPLETE_TEST").description("Hoàn thành 1 bài test")
+                        .type(QuestType.COMPLETE_TEST).description("Hoàn thành 1 bài test")
                         .target(1).progress(0).completed(false).claimed(false).xpReward(50)
                         .build()
         ));
@@ -82,9 +83,9 @@ class QuestServiceTest {
 
         assertNotNull(result);
         assertEquals(3, result.getQuests().size());
-        assertEquals("PRACTICE_QUESTIONS", result.getQuests().get(0).getType());
-        assertEquals("REVIEW_FLASHCARDS", result.getQuests().get(1).getType());
-        assertEquals("COMPLETE_TEST", result.getQuests().get(2).getType());
+        assertEquals(QuestType.PRACTICE_QUESTIONS, result.getQuests().get(0).getType());
+        assertEquals(QuestType.REVIEW_FLASHCARDS, result.getQuests().get(1).getType());
+        assertEquals(QuestType.COMPLETE_TEST, result.getQuests().get(2).getType());
 
         // Verify description matches target (bug fix validation)
         DailyQuest.Quest practiceQuest = result.getQuests().get(0);

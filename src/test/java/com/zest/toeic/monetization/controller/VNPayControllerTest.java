@@ -3,6 +3,7 @@ package com.zest.toeic.monetization.controller;
 import com.zest.toeic.monetization.model.PaymentTransaction;
 import com.zest.toeic.monetization.service.SubscriptionService;
 import com.zest.toeic.monetization.service.VNPayService;
+import com.zest.toeic.shared.model.enums.PaymentStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +45,7 @@ class VNPayControllerTest {
     @Test
     void vnpayIpn_returnsOk() throws Exception {
         when(vnPayService.processIpnCallback(any())).thenReturn(Map.of("RspCode", "00"));
-        PaymentTransaction tx = PaymentTransaction.builder().status("SUCCESS").userId("u1").build();
+        PaymentTransaction tx = PaymentTransaction.builder().status(PaymentStatus.SUCCESS).userId("u1").build();
         tx.setId("tx1");
         when(vnPayService.getTransactionByTxnRef(anyString())).thenReturn(tx);
 

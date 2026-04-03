@@ -3,6 +3,7 @@ package com.zest.toeic.gamification.service;
 import com.zest.toeic.gamification.model.WeeklyGoal;
 import com.zest.toeic.gamification.repository.WeeklyGoalRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
+import com.zest.toeic.shared.model.enums.GoalStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -68,7 +69,7 @@ class WeeklyGoalServiceTest {
         when(weeklyGoalRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         WeeklyGoal result = weeklyGoalService.updateProgress("u1", 3, 10);
-        assertEquals("COMPLETED", result.getStatus());
+        assertEquals(GoalStatus.COMPLETED, result.getStatus());
     }
 
     @Test
@@ -79,13 +80,13 @@ class WeeklyGoalServiceTest {
 
     @Test
     void expireOldGoals_expiresCorrectly() {
-        WeeklyGoal oldGoal = WeeklyGoal.builder().userId("u1").weekStart(getWeekStart().minusWeeks(2)).status("ACTIVE").build();
-        when(weeklyGoalRepository.findByStatus("ACTIVE")).thenReturn(List.of(oldGoal));
+        WeeklyGoal oldGoal = WeeklyGoal.builder().userId("u1").weekStart(getWeekStart().minusWeeks(2)).status(GoalStatus.ACTIVE).build();
+        when(weeklyGoalRepository.findByStatus(GoalStatus.ACTIVE)).thenReturn(List.of(oldGoal));
         when(weeklyGoalRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         int expired = weeklyGoalService.expireOldGoals();
         assertEquals(1, expired);
-        assertEquals("EXPIRED", oldGoal.getStatus());
+        assertEquals(GoalStatus.EXPIRED, oldGoal.getStatus());
     }
 
     @Test

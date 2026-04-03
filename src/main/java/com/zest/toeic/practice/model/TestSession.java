@@ -1,6 +1,9 @@
 package com.zest.toeic.practice.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
+import com.zest.toeic.shared.model.enums.SessionStatus;
+import com.zest.toeic.shared.model.enums.TestType;
 import lombok.*;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,10 +23,10 @@ public class TestSession extends BaseDocument {
     @Indexed
     private String userId;
 
-    private String type; // PLACEMENT, MOCK, MINI
+    private TestType type;
 
     @Builder.Default
-    private String status = "IN_PROGRESS"; // IN_PROGRESS, COMPLETED, ABANDONED
+    private SessionStatus status = SessionStatus.IN_PROGRESS;
 
     private TestConfig config;
 
@@ -43,7 +46,7 @@ public class TestSession extends BaseDocument {
     private Instant completedAt;
 
     // Adaptive state for PLACEMENT
-    private String currentDifficulty;
+    private QuestionDifficulty currentDifficulty;
     private int currentQuestionIndex;
 
     @Data
@@ -52,7 +55,7 @@ public class TestSession extends BaseDocument {
     @AllArgsConstructor
     public static class TestConfig {
         private Integer part;       // null = all parts
-        private String difficulty;  // null = mixed
+        private QuestionDifficulty difficulty;  // null = mixed
         private int questionCount;
         private int timeLimitMinutes;
     }
@@ -66,6 +69,6 @@ public class TestSession extends BaseDocument {
         private String selectedOption;
         private boolean correct;
         private int timeTaken;
-        private String difficulty;
+        private QuestionDifficulty difficulty;
     }
 }

@@ -1,6 +1,7 @@
 package com.zest.toeic.auth.repository;
 
 import com.zest.toeic.auth.model.User;
+import com.zest.toeic.shared.model.enums.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -15,5 +16,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     Page<User> findByDisplayNameContainingIgnoreCase(String displayName, Pageable pageable);
 
-    Page<User> findByStatus(String status, Pageable pageable);
+    Page<User> findByStatus(UserStatus status, Pageable pageable);
 }
+

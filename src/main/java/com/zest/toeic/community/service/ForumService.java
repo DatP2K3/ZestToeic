@@ -6,14 +6,18 @@ import com.zest.toeic.community.repository.ForumCommentRepository;
 import com.zest.toeic.community.repository.ForumPostRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.ForumPostStatus;
+import com.zest.toeic.shared.model.enums.ForumPostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class ForumService {
 
     private final ForumPostRepository postRepository;
@@ -32,14 +36,14 @@ public class ForumService {
 
     public ForumPost createPost(String userId, String userName, String title, String content, String type, List<String> tags) {
         String moderationResult = moderationService.checkContent(content, userId);
-        String status = "CLEAN".equals(moderationResult) ? "PUBLISHED" : "UNDER_REVIEW";
+        ForumPostStatus status = "CLEAN".equals(moderationResult) ? ForumPostStatus.PUBLISHED : ForumPostStatus.UNDER_REVIEW;
 
         ForumPost post = ForumPost.builder()
                 .title(title)
                 .content(content)
                 .authorId(userId)
                 .authorName(userName)
-                .type(type != null ? type : "DISCUSSION")
+                .type(type != null ? ForumPostType.valueOf(type) : ForumPostType.DISCUSSION)
                 .tags(tags != null ? tags : List.of())
                 .status(status)
                 .build();
@@ -49,15 +53,15 @@ public class ForumService {
     public Page<ForumPost> getPosts(String type, String tag, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         if (type != null && tag != null) {
-            return postRepository.findByStatusAndType("PUBLISHED", type, pageable);
+            return postRepository.findByStatusAndType(ForumPostStatus.PUBLISHED.name(), type, pageable);
         }
         if (tag != null) {
-            return postRepository.findByStatusAndTagsContaining("PUBLISHED", tag, pageable);
+            return postRepository.findByStatusAndTagsContaining(ForumPostStatus.PUBLISHED.name(), tag, pageable);
         }
         if (type != null) {
-            return postRepository.findByStatusAndType("PUBLISHED", type, pageable);
+            return postRepository.findByStatusAndType(ForumPostStatus.PUBLISHED.name(), type, pageable);
         }
-        return postRepository.findByStatus("PUBLISHED", pageable);
+        return postRepository.findByStatus(ForumPostStatus.PUBLISHED.name(), pageable);
     }
 
     public ForumPost getPost(String postId) {
@@ -81,7 +85,7 @@ public class ForumService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + postId));
 
         String moderationResult = moderationService.checkContent(content, userId);
-        String status = "CLEAN".equals(moderationResult) ? "PUBLISHED" : "UNDER_REVIEW";
+        ForumPostStatus status = "CLEAN".equals(moderationResult) ? ForumPostStatus.PUBLISHED : ForumPostStatus.UNDER_REVIEW;
 
         ForumComment comment = ForumComment.builder()
                 .postId(postId)
@@ -94,7 +98,7 @@ public class ForumService {
         ForumComment saved = commentRepository.save(comment);
 
         // Update post comment count
-        int count = commentRepository.countByPostIdAndStatus(postId, "PUBLISHED");
+        int count = commentRepository.countByPostIdAndStatus(postId, ForumPostStatus.PUBLISHED.name());
         postRepository.findById(postId).ifPresent(p -> {
             p.setCommentCount(count);
             postRepository.save(p);
@@ -104,7 +108,7 @@ public class ForumService {
     }
 
     public List<ForumComment> getComments(String postId) {
-        return commentRepository.findByPostIdAndStatusOrderByCreatedAtAsc(postId, "PUBLISHED");
+        return commentRepository.findByPostIdAndStatusOrderByCreatedAtAsc(postId, ForumPostStatus.PUBLISHED.name());
     }
 
     public ForumComment upvoteComment(String commentId) {
@@ -119,7 +123,7 @@ public class ForumService {
     public ForumPost markBestAnswer(String postId, String commentId, String userId) {
         ForumPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + postId));
-        if (!"QA".equals(post.getType())) {
+        if (ForumPostType.QA != post.getType()) {
             throw new BadRequestException("Chỉ bài viết dạng Q&A mới có thể đánh dấu câu trả lời hay nhất");
         }
         if (!post.getAuthorId().equals(userId)) {

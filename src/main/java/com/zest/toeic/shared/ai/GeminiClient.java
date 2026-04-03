@@ -17,8 +17,11 @@ public class GeminiClient {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiClient.class);
 
-    @Value("${ai.gemini.api-key:}")
-    private String apiKey;
+    private final GeminiKeyManager keyManager;
+
+    public GeminiClient(GeminiKeyManager keyManager) {
+        this.keyManager = keyManager;
+    }
 
     @Value("${ai.gemini.model:gemini-2.5-flash}")
     private String model;
@@ -29,7 +32,7 @@ public class GeminiClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public boolean isAvailable() {
-        return apiKey != null && !apiKey.isBlank();
+        return keyManager != null && keyManager.hasAvailableKeys();
     }
 
     /**
@@ -54,7 +57,7 @@ public class GeminiClient {
     }
 
     private String callGemini(String prompt, int maxTokens) {
-        String url = baseUrl + "/models/" + model + ":generateContent?key=" + apiKey;
+        String url = baseUrl + "/models/" + model + ":generateContent";
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of(
@@ -66,9 +69,12 @@ public class GeminiClient {
                 )
         );
 
+        String apiKey = keyManager.getNextAvailableKey();
+
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("x-goog-api-key", apiKey);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     url, HttpMethod.POST,
@@ -82,6 +88,7 @@ public class GeminiClient {
                     Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
                     List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
                     if (parts != null && !parts.isEmpty()) {
+                        keyManager.recordSuccess(apiKey);
                         return (String) parts.get(0).get("text");
                     }
                 }
@@ -89,6 +96,7 @@ public class GeminiClient {
             return null;
         } catch (Exception e) {
             log.error("Gemini API call failed: {}", e.getMessage());
+            keyManager.recordFailure(apiKey);
             return null;
         }
     }

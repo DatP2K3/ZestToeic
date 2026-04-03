@@ -7,6 +7,9 @@ import com.zest.toeic.auth.model.User;
 import com.zest.toeic.auth.repository.UserRepository;
 import com.zest.toeic.shared.exception.DuplicateResourceException;
 import com.zest.toeic.shared.exception.UnauthorizedException;
+import com.zest.toeic.shared.model.enums.SubscriptionTier;
+import com.zest.toeic.shared.model.enums.UserRole;
+import com.zest.toeic.shared.model.enums.UserStatus;
 import com.zest.toeic.shared.security.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,11 +49,11 @@ class AuthServiceTest {
                 .email("test@example.com")
                 .passwordHash("hashed-password")
                 .displayName("Test User")
-                .status("ACTIVE")
+                .status(UserStatus.ACTIVE)
                 .level(1)
                 .totalXp(0L)
-                .role("USER")
-                .subscriptionTier("FREE")
+                .role(UserRole.USER)
+                .subscriptionTier(SubscriptionTier.FREE)
                 .build();
         mockUser.setId("u1");
     }
@@ -133,7 +136,7 @@ class AuthServiceTest {
         req.setEmail("test@example.com");
         req.setPassword("pass123");
 
-        mockUser.setStatus("BANNED");
+        mockUser.setStatus(UserStatus.BANNED);
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("pass123", "hashed-password")).thenReturn(true);

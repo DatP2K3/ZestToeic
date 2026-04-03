@@ -7,11 +7,14 @@ import com.zest.toeic.auth.model.User;
 import com.zest.toeic.auth.repository.UserRepository;
 import com.zest.toeic.shared.exception.DuplicateResourceException;
 import com.zest.toeic.shared.exception.UnauthorizedException;
+import com.zest.toeic.shared.model.enums.UserStatus;
 import com.zest.toeic.shared.security.JwtTokenProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -49,7 +52,7 @@ public class AuthService {
             throw new UnauthorizedException("Email hoặc mật khẩu không đúng");
         }
 
-        if ("BANNED".equals(user.getStatus())) {
+        if (user.getStatus() == UserStatus.BANNED) {
             throw new UnauthorizedException("Tài khoản đã bị khóa");
         }
 
@@ -70,7 +73,7 @@ public class AuthService {
     }
 
     private AuthResponse buildAuthResponse(User user) {
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole());
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String refreshTokenStr = jwtTokenProvider.generateRefreshToken(user.getId());
 
         return AuthResponse.builder()
@@ -82,7 +85,7 @@ public class AuthService {
                         .displayName(user.getDisplayName())
                         .level(user.getLevel())
                         .totalXp(user.getTotalXp())
-                        .subscriptionTier(user.getSubscriptionTier())
+                        .subscriptionTier(user.getSubscriptionTier().name())
                         .build())
                 .build();
     }

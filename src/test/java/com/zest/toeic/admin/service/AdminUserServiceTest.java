@@ -3,6 +3,7 @@ package com.zest.toeic.admin.service;
 import com.zest.toeic.auth.model.User;
 import com.zest.toeic.auth.repository.UserRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.UserStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +39,7 @@ class AdminUserServiceTest {
         mockUser = User.builder()
                 .email("test@example.com")
                 .displayName("John Doe")
-                .status("ACTIVE")
+                .status(UserStatus.ACTIVE)
                 .build();
         mockUser.setId("u1");
     }
@@ -55,7 +56,7 @@ class AdminUserServiceTest {
     @Test
     void listUsers_withStatusFilter() {
         Page<User> page = new PageImpl<>(List.of(mockUser));
-        when(userRepository.findByStatus(eq("ACTIVE"), any(PageRequest.class))).thenReturn(page);
+        when(userRepository.findByStatus(eq(UserStatus.ACTIVE), any(PageRequest.class))).thenReturn(page);
 
         Page<User> result = adminUserService.listUsers(null, "ACTIVE", 0, 10);
         assertEquals(1, result.getContent().size());
@@ -89,7 +90,7 @@ class AdminUserServiceTest {
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = adminUserService.suspendUser("u1", "Violation");
-        assertEquals("SUSPENDED", result.getStatus());
+        assertEquals(UserStatus.SUSPENDED, result.getStatus());
     }
 
     @Test
@@ -98,16 +99,16 @@ class AdminUserServiceTest {
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = adminUserService.banUser("u1");
-        assertEquals("BANNED", result.getStatus());
+        assertEquals(UserStatus.BANNED, result.getStatus());
     }
 
     @Test
     void activateUser_shouldSetStatusActive() {
-        mockUser.setStatus("SUSPENDED");
+        mockUser.setStatus(UserStatus.SUSPENDED);
         when(userRepository.findById("u1")).thenReturn(Optional.of(mockUser));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = adminUserService.activateUser("u1");
-        assertEquals("ACTIVE", result.getStatus());
+        assertEquals(UserStatus.ACTIVE, result.getStatus());
     }
 }

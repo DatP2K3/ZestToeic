@@ -3,10 +3,12 @@ package com.zest.toeic.admin.audit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
 @Service
+@Transactional
 public class AuditService {
 
     private final AuditLogRepository repository;

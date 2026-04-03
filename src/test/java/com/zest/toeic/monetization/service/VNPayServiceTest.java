@@ -2,6 +2,7 @@ package com.zest.toeic.monetization.service;
 
 import com.zest.toeic.monetization.model.PaymentTransaction;
 import com.zest.toeic.monetization.repository.PaymentTransactionRepository;
+import com.zest.toeic.shared.model.enums.PaymentStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,7 +86,7 @@ class VNPayServiceTest {
     void processIpnCallback_validChecksum_alreadyConfirmed_returns02() {
         Map<String, String> params = generateValidParamsAndHash("testRef", "9900000", "00");
 
-        PaymentTransaction tx = PaymentTransaction.builder().vnpTxnRef("testRef").amount(99000).status("SUCCESS").build();
+        PaymentTransaction tx = PaymentTransaction.builder().vnpTxnRef("testRef").amount(99000).status(PaymentStatus.SUCCESS).build();
         when(transactionRepository.findByVnpTxnRef("testRef")).thenReturn(Optional.of(tx));
 
         Map<String, String> response = vnPayService.processIpnCallback(params);
@@ -103,14 +104,14 @@ class VNPayServiceTest {
         
         params = generateValidParamsAndHash(params);
 
-        PaymentTransaction tx = PaymentTransaction.builder().vnpTxnRef("testRef").amount(99000).status("PENDING").build();
+        PaymentTransaction tx = PaymentTransaction.builder().vnpTxnRef("testRef").amount(99000).status(PaymentStatus.PENDING).build();
         when(transactionRepository.findByVnpTxnRef("testRef")).thenReturn(Optional.of(tx));
         when(transactionRepository.save(any(PaymentTransaction.class))).thenAnswer(i -> i.getArgument(0));
 
         Map<String, String> response = vnPayService.processIpnCallback(params);
         
         assertEquals("00", response.get("RspCode"));
-        assertEquals("SUCCESS", tx.getStatus());
+        assertEquals(PaymentStatus.SUCCESS, tx.getStatus());
         assertEquals("bank123", tx.getVnpTransactionNo());
         assertEquals("NCB", tx.getVnpBankCode());
         verify(transactionRepository).save(tx);

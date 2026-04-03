@@ -1,7 +1,7 @@
 package com.zest.toeic.community.model;
 
+import com.zest.toeic.shared.model.enums.ForumPostStatus;
 import org.junit.jupiter.api.Test;
-import java.time.Instant;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,7 +18,7 @@ class ForumEntitiesTest {
         post.setUpvotes(10);
         post.setViewCount(20);
         post.setCommentCount(5);
-        post.setStatus("PUB");
+        post.setStatus(ForumPostStatus.PUBLISHED);
 
         assertEquals("p1", post.getId());
         assertEquals("a1", post.getAuthorId());
@@ -39,7 +39,7 @@ class ForumEntitiesTest {
         cc.setContent("Cont");
         cc.setParentId("pa1");
         cc.setUpvotes(2);
-        cc.setStatus("PUB");
+        cc.setStatus(ForumPostStatus.PUBLISHED);
 
         assertEquals("c1", cc.getId());
         assertEquals("p1", cc.getPostId());

@@ -3,11 +3,13 @@ package com.zest.toeic.admin.featureflag;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Transactional
 public class FeatureFlagService {
 
     private static final String REDIS_PREFIX = "feature_flag:";

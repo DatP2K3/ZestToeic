@@ -1,5 +1,7 @@
 package com.zest.toeic.practice.model;
 
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,11 +14,11 @@ class PracticeEntitiesTest {
         q.setId("q1");
         q.setPart(1);
         q.setCategory("GRAMMAR");
-        q.setDifficulty("EASY");
+        q.setDifficulty(QuestionDifficulty.EASY);
         q.setContent("C");
         q.setImageUrl("U");
         q.setAudioUrl("A");
-        q.setStatus("PUBLISHED");
+        q.setStatus(QuestionStatus.PUBLISHED);
         q.setSource("manual");
         q.setAiConfidence(0.95);
 

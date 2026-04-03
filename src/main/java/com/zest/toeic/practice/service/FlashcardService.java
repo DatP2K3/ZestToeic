@@ -1,30 +1,35 @@
 package com.zest.toeic.practice.service;
 
-import com.zest.toeic.gamification.service.GamificationService;
+import com.zest.toeic.shared.event.XpAwardedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.zest.toeic.practice.dto.CreateFlashcardRequest;
 import com.zest.toeic.practice.dto.FlashcardStats;
 import com.zest.toeic.practice.model.Flashcard;
 import com.zest.toeic.practice.repository.FlashcardRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.FlashcardStatus;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
+@Transactional
 public class FlashcardService {
 
     private static final Logger log = LoggerFactory.getLogger(FlashcardService.class);
 
     private final FlashcardRepository flashcardRepository;
-    private final GamificationService gamificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public FlashcardService(FlashcardRepository flashcardRepository, GamificationService gamificationService) {
+    public FlashcardService(FlashcardRepository flashcardRepository, ApplicationEventPublisher eventPublisher) {
         this.flashcardRepository = flashcardRepository;
-        this.gamificationService = gamificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     public Flashcard createFlashcard(String userId, CreateFlashcardRequest request) {
@@ -34,11 +39,11 @@ public class FlashcardService {
                 .back(request.getBack())
                 .tags(request.getTags())
                 .part(request.getPart())
-                .difficulty(request.getDifficulty())
+                .difficulty(request.getDifficulty() != null ? QuestionDifficulty.valueOf(request.getDifficulty()) : QuestionDifficulty.MEDIUM)
                 .easeFactor(2.5)
                 .interval(0)
                 .repetitions(0)
-                .status("LEARNING")
+                .status(FlashcardStatus.LEARNING)
                 .nextReviewAt(Instant.now())
                 .build();
 
@@ -65,7 +70,7 @@ public class FlashcardService {
             // Failed — reset
             card.setRepetitions(0);
             card.setInterval(1);
-            card.setStatus("LEARNING");
+            card.setStatus(FlashcardStatus.LEARNING);
         } else {
             // Passed — advance
             card.setRepetitions(card.getRepetitions() + 1);
@@ -84,9 +89,9 @@ public class FlashcardService {
 
             // Update status
             if (card.getRepetitions() >= 5 && card.getEaseFactor() >= 2.2) {
-                card.setStatus("MASTERED");
+                card.setStatus(FlashcardStatus.MASTERED);
             } else {
-                card.setStatus("REVIEW");
+                card.setStatus(FlashcardStatus.REVIEW);
             }
         }
 
@@ -96,8 +101,7 @@ public class FlashcardService {
         flashcardRepository.save(card);
 
         // Award XP for reviewing
-        gamificationService.awardXp(userId, 5, "FLASHCARD_REVIEW", cardId,
-                "Flashcard review — quality " + quality);
+        eventPublisher.publishEvent(new XpAwardedEvent(userId, 5, "FLASHCARD_REVIEW", cardId, "Flashcard review XP"));
 
         log.debug("Card {} reviewed: q={}, interval={}, EF={}, status={}",
                 cardId, quality, card.getInterval(), card.getEaseFactor(), card.getStatus());
@@ -111,9 +115,9 @@ public class FlashcardService {
 
         return FlashcardStats.builder()
                 .total(flashcardRepository.countByUserId(userId))
-                .learning(flashcardRepository.countByUserIdAndStatus(userId, "LEARNING"))
-                .review(flashcardRepository.countByUserIdAndStatus(userId, "REVIEW"))
-                .mastered(flashcardRepository.countByUserIdAndStatus(userId, "MASTERED"))
+                .learning(flashcardRepository.countByUserIdAndStatus(userId, FlashcardStatus.LEARNING.name()))
+                .review(flashcardRepository.countByUserIdAndStatus(userId, FlashcardStatus.REVIEW.name()))
+                .mastered(flashcardRepository.countByUserIdAndStatus(userId, FlashcardStatus.MASTERED.name()))
                 .dueNow(dueNow)
                 .build();
     }

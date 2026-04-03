@@ -3,25 +3,22 @@ package com.zest.toeic.practice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zest.toeic.practice.dto.StartTestRequest;
 import com.zest.toeic.practice.dto.TestAnswerRequest;
+import com.zest.toeic.practice.dto.TestAnswerResponse;
 import com.zest.toeic.practice.dto.TestResult;
 import com.zest.toeic.practice.model.TestSession;
 import com.zest.toeic.practice.service.TestService;
+import com.zest.toeic.shared.model.enums.TestType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -55,7 +52,7 @@ class TestControllerTest {
 
     @Test
     void startPlacementTest_Success() throws Exception {
-        TestSession session = TestSession.builder().type("PLACEMENT").build();
+        TestSession session = TestSession.builder().type(TestType.PLACEMENT).build();
         session.setId("s1");
         
         when(testService.startPlacementTest("user1")).thenReturn(session);
@@ -70,7 +67,7 @@ class TestControllerTest {
 
     @Test
     void startMiniTest_Success() throws Exception {
-        TestSession session = TestSession.builder().type("MINI").build();
+        TestSession session = TestSession.builder().type(TestType.MINI).build();
         session.setId("s1");
 
         when(testService.startMiniTest(eq("user1"), any(StartTestRequest.class))).thenReturn(session);
@@ -94,8 +91,13 @@ class TestControllerTest {
         req.setQuestionId("q1");
         req.setSelectedOption("A");
 
+        TestAnswerResponse response = TestAnswerResponse.builder()
+                .correct(true)
+                .xpEarned(10)
+                .build();
+
         when(testService.submitTestAnswer(eq("user1"), eq("s1"), any(TestAnswerRequest.class)))
-                .thenReturn(Map.of("correct", true, "xpEarned", 10));
+                .thenReturn(response);
 
         mockMvc.perform(post("/api/v1/tests/s1/answer")
                         .principal(principal)
@@ -120,7 +122,7 @@ class TestControllerTest {
 
     @Test
     void getTest_Success() throws Exception {
-        TestSession session = TestSession.builder().type("MOCK").build();
+        TestSession session = TestSession.builder().type(TestType.MOCK).build();
         session.setId("s1");
         when(testService.getTestSession("user1", "s1")).thenReturn(session);
 

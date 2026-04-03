@@ -1,6 +1,8 @@
 package com.zest.toeic.practice.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.FlashcardStatus;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
 import lombok.*;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,7 +24,7 @@ public class Flashcard extends BaseDocument {
     private String back;            // Answer / definition
     private List<String> tags;
     private Integer part;           // TOEIC Part (optional)
-    private String difficulty;
+    private QuestionDifficulty difficulty;
 
     // SM-2 state
     @Builder.Default
@@ -32,7 +34,7 @@ public class Flashcard extends BaseDocument {
     @Builder.Default
     private int repetitions = 0;
     @Builder.Default
-    private String status = "LEARNING"; // LEARNING, REVIEW, MASTERED
+    private FlashcardStatus status = FlashcardStatus.LEARNING;
 
     private Instant nextReviewAt;
     private Instant lastReviewedAt;

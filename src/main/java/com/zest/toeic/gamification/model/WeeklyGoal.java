@@ -1,9 +1,11 @@
 package com.zest.toeic.gamification.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.GoalStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDate;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +29,7 @@ public class WeeklyGoal extends BaseDocument {
     private LocalDate weekStart;
 
     @Builder.Default
-    private String status = "ACTIVE"; // ACTIVE, COMPLETED, EXPIRED
+    private GoalStatus status = GoalStatus.ACTIVE;
 
     public boolean isCompleted() {
         return currentQuestions >= targetQuestions && currentMinutes >= targetMinutes;

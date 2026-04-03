@@ -3,6 +3,7 @@ package com.zest.toeic.monetization.controller;
 import com.zest.toeic.monetization.model.PaymentTransaction;
 import com.zest.toeic.monetization.service.SubscriptionService;
 import com.zest.toeic.monetization.service.VNPayService;
+import com.zest.toeic.shared.model.enums.PaymentStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class VNPayController {
         if ("00".equals(response.get("RspCode"))) {
             String vnpTxnRef = params.get("vnp_TxnRef");
             PaymentTransaction tx = vnPayService.getTransactionByTxnRef(vnpTxnRef);
-            if (tx != null && "SUCCESS".equals(tx.getStatus())) {
+            if (tx != null && PaymentStatus.SUCCESS == tx.getStatus()) {
                 subscriptionService.activatePremium(tx.getUserId(), tx.getId());
                 log.info("Premium activated for user {} via VNPay", tx.getUserId());
             }

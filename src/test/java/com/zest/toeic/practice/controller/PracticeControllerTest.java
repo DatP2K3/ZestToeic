@@ -52,7 +52,7 @@ class PracticeControllerTest {
     void getRandomQuestions_ReturnsList() throws Exception {
         Question q = Question.builder().part(5).category("GRAMMAR").build();
         q.setId("q1");
-        
+
         when(practiceService.getRandomQuestions(5, "EASY", 10)).thenReturn(List.of(q));
 
         mockMvc.perform(get("/api/v1/questions/random")

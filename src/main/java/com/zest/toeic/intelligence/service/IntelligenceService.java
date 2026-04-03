@@ -10,6 +10,7 @@ import com.zest.toeic.practice.model.UserAnswer;
 import com.zest.toeic.practice.repository.QuestionRepository;
 import com.zest.toeic.practice.repository.UserAnswerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
+@Transactional(readOnly = true)
 public class IntelligenceService {
 
     private static final int MIN_ANSWERS_FOR_SIGNIFICANCE = 5;

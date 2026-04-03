@@ -1,6 +1,7 @@
 package com.zest.toeic.community.repository;
 
 import com.zest.toeic.community.model.Friend;
+import com.zest.toeic.shared.model.enums.FriendStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -15,7 +16,7 @@ public interface FriendRepository extends MongoRepository<Friend, String> {
     @Query("{ $and: [ { $or: [ { 'senderId': ?0 }, { 'receiverId': ?0 } ] }, { 'status': 'ACCEPTED' } ] }")
     List<Friend> findAcceptedFriends(String userId);
 
-    List<Friend> findByReceiverIdAndStatus(String receiverId, String status);
+    List<Friend> findByReceiverIdAndStatus(String receiverId, FriendStatus status);
 
-    long countByReceiverIdAndStatus(String receiverId, String status);
+    long countByReceiverIdAndStatus(String receiverId, FriendStatus status);
 }

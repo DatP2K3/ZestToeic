@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/quests")
@@ -33,11 +33,9 @@ public class QuestController {
     @PostMapping("/daily/progress")
     @Operation(summary = "Cập nhật tiến độ quest (gọi khi user hoàn thành action)")
     public ResponseEntity<ApiResponse<DailyQuest>> updateProgress(
-            Authentication auth, @RequestBody Map<String, Object> body) {
+            Authentication auth, @Valid @RequestBody com.zest.toeic.gamification.dto.UpdateQuestProgressRequest request) {
         String userId = (String) auth.getPrincipal();
-        String questType = (String) body.get("questType");
-        int amount = body.get("amount") instanceof Integer i ? i : Integer.parseInt(body.get("amount").toString());
-        DailyQuest dq = questService.updateProgress(userId, questType, amount);
+        DailyQuest dq = questService.updateProgress(userId, request.questType(), request.amount());
         return ResponseEntity.ok(ApiResponse.success(dq));
     }
 

@@ -21,13 +21,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class GeminiClientTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private GeminiKeyManager keyManager;
 
     @InjectMocks
     private GeminiClient geminiClient;
@@ -38,6 +43,8 @@ class GeminiClientTest {
     void setUp() {
         // Inject mock RestTemplate using ReflectionTestUtils since it's hardcoded
         ReflectionTestUtils.setField(geminiClient, "restTemplate", restTemplate);
+        ReflectionTestUtils.setField(geminiClient, "model", "test-model");
+        ReflectionTestUtils.setField(geminiClient, "baseUrl", "https://test");
 
         mockQuestion = Question.builder()
                 .part(5)
@@ -51,37 +58,33 @@ class GeminiClientTest {
     }
 
     @Test
-    void isAvailable_ApiKeyNotConfigured_ReturnsFalse() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "");
-        assertFalse(geminiClient.isAvailable());
-
-        ReflectionTestUtils.setField(geminiClient, "apiKey", null);
+    void isAvailable_NoAvailableKeys_ReturnsFalse() {
+        when(keyManager.hasAvailableKeys()).thenReturn(false);
         assertFalse(geminiClient.isAvailable());
     }
 
     @Test
-    void isAvailable_ApiKeyConfigured_ReturnsTrue() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "test-key");
+    void isAvailable_HasAvailableKeys_ReturnsTrue() {
+        when(keyManager.hasAvailableKeys()).thenReturn(true);
         assertTrue(geminiClient.isAvailable());
     }
 
     @Test
     void ask_ApiKeyNotConfigured_ThrowsException() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "");
+        when(keyManager.hasAvailableKeys()).thenReturn(false);
         assertThrows(IllegalStateException.class, () -> geminiClient.ask("prompt"));
     }
 
     @Test
     void explain_ApiKeyNotConfigured_ThrowsException() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "");
+        when(keyManager.hasAvailableKeys()).thenReturn(false);
         assertThrows(IllegalStateException.class, () -> geminiClient.explain(mockQuestion, "B"));
     }
 
     @Test
     void ask_Success_ReturnsText() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "test-key");
-        ReflectionTestUtils.setField(geminiClient, "model", "test-model");
-        ReflectionTestUtils.setField(geminiClient, "baseUrl", "https://test");
+        when(keyManager.hasAvailableKeys()).thenReturn(true);
+        when(keyManager.getNextAvailableKey()).thenReturn("test-key1");
 
         Map<String, Object> mockBody = Map.of(
                 "candidates", List.of(Map.of(
@@ -98,13 +101,14 @@ class GeminiClientTest {
         String result = geminiClient.ask("Hello");
 
         assertEquals("AI Response", result);
+        verify(keyManager).recordSuccess("test-key1");
+        verify(keyManager, never()).recordFailure(anyString());
     }
 
     @Test
-    void ask_RestTemplateThrowsException_ReturnsNull() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "test-key");
-        ReflectionTestUtils.setField(geminiClient, "model", "test-model");
-        ReflectionTestUtils.setField(geminiClient, "baseUrl", "https://test");
+    void ask_RestTemplateThrowsException_ReturnsNull_AndRecordsFailure() {
+        when(keyManager.hasAvailableKeys()).thenReturn(true);
+        when(keyManager.getNextAvailableKey()).thenReturn("test-key2");
 
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .thenThrow(new RuntimeException("Connection timeout"));
@@ -112,13 +116,14 @@ class GeminiClientTest {
         String result = geminiClient.ask("Hello");
 
         assertNull(result);
+        verify(keyManager).recordFailure("test-key2");
+        verify(keyManager, never()).recordSuccess(anyString());
     }
 
     @Test
-    void explain_Success_BuildsPromptAndCallsOpenAI() {
-        ReflectionTestUtils.setField(geminiClient, "apiKey", "test-key");
-        ReflectionTestUtils.setField(geminiClient, "model", "test-model");
-        ReflectionTestUtils.setField(geminiClient, "baseUrl", "https://test");
+    void explain_Success_BuildsPromptAndCallsGemini() {
+        when(keyManager.hasAvailableKeys()).thenReturn(true);
+        when(keyManager.getNextAvailableKey()).thenReturn("test-key3");
 
         Map<String, Object> mockBody = Map.of(
                 "candidates", List.of(Map.of(
@@ -135,5 +140,6 @@ class GeminiClientTest {
         String result = geminiClient.explain(mockQuestion, "B");
 
         assertEquals("Explanation details", result);
+        verify(keyManager).recordSuccess("test-key3");
     }
 }

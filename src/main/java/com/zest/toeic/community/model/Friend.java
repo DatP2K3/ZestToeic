@@ -1,6 +1,7 @@
 package com.zest.toeic.community.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.FriendStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class Friend extends BaseDocument {
     private String receiverId;
 
     @Builder.Default
-    private String status = "PENDING"; // PENDING, ACCEPTED, REJECTED
+    private FriendStatus status = FriendStatus.PENDING;
 }
+

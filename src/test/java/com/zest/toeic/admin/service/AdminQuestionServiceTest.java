@@ -3,6 +3,7 @@ package com.zest.toeic.admin.service;
 import com.zest.toeic.practice.model.Question;
 import com.zest.toeic.practice.repository.QuestionRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +38,7 @@ class AdminQuestionServiceTest {
         mockQuestion = Question.builder()
                 .part(5)
                 .content("Test question")
-                .status("PENDING")
+                .status(QuestionStatus.PENDING)
                 .build();
         mockQuestion.setId("q1");
     }
@@ -45,7 +46,7 @@ class AdminQuestionServiceTest {
     @Test
     void listQuestions_withBothFilters() {
         Page<Question> page = new PageImpl<>(List.of(mockQuestion));
-        when(questionRepository.findByPartAndStatus(eq(5), eq("PENDING"), any(PageRequest.class))).thenReturn(page);
+        when(questionRepository.findByPartAndStatus(eq(5), eq(QuestionStatus.PENDING), any(PageRequest.class))).thenReturn(page);
 
         Page<Question> result = adminQuestionService.listQuestions(5, "PENDING", 0, 10);
         assertEquals(1, result.getContent().size());
@@ -63,7 +64,7 @@ class AdminQuestionServiceTest {
     @Test
     void listQuestions_withStatusFilterOnly() {
         Page<Question> page = new PageImpl<>(List.of(mockQuestion));
-        when(questionRepository.findByStatus(eq("PENDING"), any(PageRequest.class))).thenReturn(page);
+        when(questionRepository.findByStatus(eq(QuestionStatus.PENDING), any(PageRequest.class))).thenReturn(page);
 
         Page<Question> result = adminQuestionService.listQuestions(null, "PENDING", 0, 10);
         assertEquals(1, result.getContent().size());
@@ -85,7 +86,7 @@ class AdminQuestionServiceTest {
         Question newQ = Question.builder().content("New Q").build();
         Question result = adminQuestionService.createQuestion(newQ);
 
-        assertEquals("PENDING", result.getStatus());
+        assertEquals(QuestionStatus.PENDING, result.getStatus());
         verify(questionRepository).save(any(Question.class));
     }
 
@@ -122,7 +123,7 @@ class AdminQuestionServiceTest {
         when(questionRepository.save(any(Question.class))).thenAnswer(i -> i.getArgument(0));
 
         Question result = adminQuestionService.approveQuestion("q1");
-        assertEquals("PUBLISHED", result.getStatus());
+        assertEquals(QuestionStatus.PUBLISHED, result.getStatus());
     }
 
     @Test
@@ -131,6 +132,6 @@ class AdminQuestionServiceTest {
         when(questionRepository.save(any(Question.class))).thenAnswer(i -> i.getArgument(0));
 
         Question result = adminQuestionService.rejectQuestion("q1");
-        assertEquals("REJECTED", result.getStatus());
+        assertEquals(QuestionStatus.REJECTED, result.getStatus());
     }
 }

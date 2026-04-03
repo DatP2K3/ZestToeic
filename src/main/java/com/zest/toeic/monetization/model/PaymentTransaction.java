@@ -1,6 +1,7 @@
 package com.zest.toeic.monetization.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.PaymentStatus;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,7 +20,7 @@ public class PaymentTransaction extends BaseDocument {
     private String subscriptionId;
     private long amount; // in VND
     private String currency;
-    private String status; // PENDING, SUCCESS, FAILED
+    private PaymentStatus status;
     private String paymentMethod; // VNPAY
     private String vnpTxnRef;
     private String vnpTransactionNo;

@@ -5,12 +5,14 @@ import com.zest.toeic.gamification.repository.UserStreakRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
 @Service
+@Transactional
 public class StreakService {
 
     private static final Logger log = LoggerFactory.getLogger(StreakService.class);

@@ -7,13 +7,16 @@ import com.zest.toeic.community.model.Friend;
 import com.zest.toeic.community.repository.FriendRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.FriendStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class FriendService {
 
     private static final Logger log = LoggerFactory.getLogger(FriendService.class);
@@ -42,7 +45,7 @@ public class FriendService {
         Friend friend = Friend.builder()
                 .senderId(senderId)
                 .receiverId(receiverId)
-                .status("PENDING")
+                .status(FriendStatus.PENDING)
                 .build();
 
         Friend saved = friendRepository.save(friend);
@@ -58,11 +61,11 @@ public class FriendService {
             throw new BadRequestException("Bạn không có quyền chấp nhận lời mời này");
         }
 
-        if (!"PENDING".equals(friend.getStatus())) {
+        if (FriendStatus.PENDING != friend.getStatus()) {
             throw new BadRequestException("Lời mời đã được xử lý (status: " + friend.getStatus() + ")");
         }
 
-        friend.setStatus("ACCEPTED");
+        friend.setStatus(FriendStatus.ACCEPTED);
         Friend saved = friendRepository.save(friend);
         log.info("Friend request accepted: {} ← {}", friend.getSenderId(), receiverId);
         return saved;
@@ -103,13 +106,13 @@ public class FriendService {
     }
 
     public List<FriendInfo> getPendingRequests(String userId) {
-        List<Friend> pending = friendRepository.findByReceiverIdAndStatus(userId, "PENDING");
+        List<Friend> pending = friendRepository.findByReceiverIdAndStatus(userId, FriendStatus.PENDING);
         return pending.stream()
-                .map(f -> buildFriendInfo(f.getSenderId(), "PENDING"))
+                .map(f -> buildFriendInfo(f.getSenderId(), FriendStatus.PENDING))
                 .toList();
     }
 
-    private FriendInfo buildFriendInfo(String userId, String status) {
+    private FriendInfo buildFriendInfo(String userId, FriendStatus status) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return FriendInfo.builder().friendId(userId).status(status).displayName("(deleted)").build();

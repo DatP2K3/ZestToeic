@@ -1,15 +1,17 @@
 package com.zest.toeic.practice.service;
 
-import com.zest.toeic.gamification.service.GamificationService;
+import org.springframework.context.ApplicationEventPublisher;
+import com.zest.toeic.shared.event.XpAwardedEvent;
 import com.zest.toeic.practice.dto.CreateFlashcardRequest;
 import com.zest.toeic.practice.dto.FlashcardStats;
 import com.zest.toeic.practice.model.Flashcard;
 import com.zest.toeic.practice.repository.FlashcardRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.FlashcardStatus;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,7 +22,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -31,7 +32,7 @@ class FlashcardServiceTest {
     private FlashcardRepository flashcardRepository;
 
     @Mock
-    private GamificationService gamificationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private FlashcardService flashcardService;
@@ -45,11 +46,11 @@ class FlashcardServiceTest {
                 .front("abandon")
                 .back("thay đổi")
                 .part(5)
-                .difficulty("EASY")
+                .difficulty(QuestionDifficulty.EASY)
                 .easeFactor(2.5)
                 .interval(0)
                 .repetitions(0)
-                .status("LEARNING")
+                .status(FlashcardStatus.LEARNING)
                 .build();
         mockCard.setId("c1");
     }
@@ -68,7 +69,7 @@ class FlashcardServiceTest {
 
         assertEquals("user1", result.getUserId());
         assertEquals("abandon", result.getFront());
-        assertEquals("LEARNING", result.getStatus());
+        assertEquals(FlashcardStatus.LEARNING, result.getStatus());
         assertEquals(2.5, result.getEaseFactor());
     }
 
@@ -91,10 +92,10 @@ class FlashcardServiceTest {
 
         assertEquals(0, result.getRepetitions());
         assertEquals(1, result.getInterval());
-        assertEquals("LEARNING", result.getStatus());
+        assertEquals(FlashcardStatus.LEARNING, result.getStatus());
         
         verify(flashcardRepository).save(mockCard);
-        verify(gamificationService).awardXp(eq("user1"), eq(5), eq("FLASHCARD_REVIEW"), eq("c1"), anyString());
+        verify(eventPublisher).publishEvent(any(XpAwardedEvent.class));
     }
 
     @Test
@@ -105,7 +106,7 @@ class FlashcardServiceTest {
 
         assertEquals(1, result.getRepetitions());
         assertEquals(1, result.getInterval());
-        assertEquals("REVIEW", result.getStatus());
+        assertEquals(FlashcardStatus.REVIEW, result.getStatus());
         assertEquals(2.5, result.getEaseFactor(), 0.001); // EF logic: 2.5 + (0.1 - 1*(0.1)) = 2.5
     }
 
@@ -130,7 +131,7 @@ class FlashcardServiceTest {
         Flashcard result = flashcardService.reviewCard("user1", "c1", 5);
 
         assertEquals(5, result.getRepetitions());
-        assertEquals("MASTERED", result.getStatus());
+        assertEquals(FlashcardStatus.MASTERED, result.getStatus());
         assertEquals(15, result.getInterval()); // 6 * 2.5
     }
 

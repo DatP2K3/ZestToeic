@@ -1,6 +1,7 @@
 package com.zest.toeic.practice.seed;
 
 import com.zest.toeic.practice.repository.QuestionRepository;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +24,7 @@ class QuestionSeederTest {
 
     @Test
     void run_AlreadySeeded_DoesNothing() {
-        when(questionRepository.countByStatus("PUBLISHED")).thenReturn(5L);
+        when(questionRepository.countByStatus(QuestionStatus.PUBLISHED)).thenReturn(5L);
 
         questionSeeder.run();
 
@@ -32,7 +33,7 @@ class QuestionSeederTest {
 
     @Test
     void run_NotSeeded_SeedsQuestions() {
-        when(questionRepository.countByStatus("PUBLISHED")).thenReturn(0L);
+        when(questionRepository.countByStatus(QuestionStatus.PUBLISHED)).thenReturn(0L);
 
         questionSeeder.run();
 

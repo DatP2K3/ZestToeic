@@ -1,6 +1,7 @@
 package com.zest.toeic.practice.service;
 
-import com.zest.toeic.gamification.service.GamificationService;
+import com.zest.toeic.shared.event.XpAwardedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.zest.toeic.practice.dto.AnswerHistoryResponse;
 import com.zest.toeic.practice.dto.AnswerResult;
 import com.zest.toeic.practice.dto.SubmitAnswerRequest;
@@ -9,39 +10,40 @@ import com.zest.toeic.practice.model.UserAnswer;
 import com.zest.toeic.practice.repository.QuestionRepository;
 import com.zest.toeic.practice.repository.UserAnswerRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
+@Transactional
 public class PracticeService {
 
     private final QuestionRepository questionRepository;
     private final UserAnswerRepository userAnswerRepository;
-    private final GamificationService gamificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PracticeService(QuestionRepository questionRepository,
                            UserAnswerRepository userAnswerRepository,
-                           GamificationService gamificationService) {
+                           ApplicationEventPublisher eventPublisher) {
         this.questionRepository = questionRepository;
         this.userAnswerRepository = userAnswerRepository;
-        this.gamificationService = gamificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Question> getRandomQuestions(Integer part, String difficulty, int limit) {
         List<Question> questions;
 
         if (part != null && difficulty != null) {
-            questions = questionRepository.findByPartAndDifficultyAndStatus(part, difficulty.toUpperCase(), "PUBLISHED");
+            questions = questionRepository.findByPartAndDifficultyAndStatus(part, QuestionDifficulty.valueOf(difficulty.toUpperCase()), QuestionStatus.PUBLISHED);
         } else if (part != null) {
-            questions = questionRepository.findByPartAndStatus(part, "PUBLISHED");
+            questions = questionRepository.findByPartAndStatus(part, QuestionStatus.PUBLISHED);
         } else {
-            questions = questionRepository.findAll();
-            questions = questions.stream()
-                    .filter(q -> "PUBLISHED".equals(q.getStatus()))
-                    .toList();
+            questions = questionRepository.findByStatus(QuestionStatus.PUBLISHED);
         }
 
         var mutableList = new java.util.ArrayList<>(questions);
@@ -57,10 +59,10 @@ public class PracticeService {
         int xpBase = isCorrect ? 10 : 2;
 
         // Award XP
-        gamificationService.awardXp(userId, xpBase,
+        eventPublisher.publishEvent(new XpAwardedEvent(userId, xpBase,
                 isCorrect ? "ANSWER_CORRECT" : "ANSWER_WRONG",
                 request.getQuestionId(),
-                "Practice answer — Part " + question.getPart());
+                "Practice answer — Part " + question.getPart()));
 
         int xpEarned = xpBase;
 

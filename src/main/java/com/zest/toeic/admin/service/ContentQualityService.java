@@ -2,10 +2,12 @@ package com.zest.toeic.admin.service;
 
 import com.zest.toeic.practice.model.Question;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class ContentQualityService {
 
     /**

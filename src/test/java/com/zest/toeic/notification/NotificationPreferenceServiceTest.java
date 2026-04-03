@@ -1,4 +1,7 @@
 package com.zest.toeic.notification;
+import com.zest.toeic.notification.repository.NotificationPreferenceRepository;
+import com.zest.toeic.notification.model.NotificationPreference;
+import com.zest.toeic.notification.service.NotificationPreferenceService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

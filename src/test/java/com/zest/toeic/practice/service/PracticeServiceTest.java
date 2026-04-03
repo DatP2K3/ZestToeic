@@ -1,6 +1,7 @@
 package com.zest.toeic.practice.service;
 
-import com.zest.toeic.gamification.service.GamificationService;
+import org.springframework.context.ApplicationEventPublisher;
+import com.zest.toeic.shared.event.XpAwardedEvent;
 import com.zest.toeic.practice.dto.AnswerHistoryResponse;
 import com.zest.toeic.practice.dto.AnswerResult;
 import com.zest.toeic.practice.dto.SubmitAnswerRequest;
@@ -9,6 +10,8 @@ import com.zest.toeic.practice.model.UserAnswer;
 import com.zest.toeic.practice.repository.QuestionRepository;
 import com.zest.toeic.practice.repository.UserAnswerRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +29,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +42,7 @@ class PracticeServiceTest {
     private UserAnswerRepository userAnswerRepository;
 
     @Mock
-    private GamificationService gamificationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private PracticeService practiceService;
@@ -52,8 +55,8 @@ class PracticeServiceTest {
         mockQuestion = Question.builder()
                 .part(5)
                 .category("GRAMMAR")
-                .difficulty("MEDIUM")
-                .status("PUBLISHED")
+                .difficulty(QuestionDifficulty.MEDIUM)
+                .status(QuestionStatus.PUBLISHED)
                 .correctAnswer("B")
                 .build();
         mockQuestion.setId("q1");
@@ -71,31 +74,31 @@ class PracticeServiceTest {
 
     @Test
     void getRandomQuestions_WithPartAndDifficulty_ReturnsQuestions() {
-        when(questionRepository.findByPartAndDifficultyAndStatus(5, "MEDIUM", "PUBLISHED"))
+        when(questionRepository.findByPartAndDifficultyAndStatus(5, QuestionDifficulty.MEDIUM, QuestionStatus.PUBLISHED))
                 .thenReturn(List.of(mockQuestion, mockQuestion));
 
         List<Question> result = practiceService.getRandomQuestions(5, "MEDIUM", 5);
 
         assertEquals(2, result.size());
-        verify(questionRepository).findByPartAndDifficultyAndStatus(5, "MEDIUM", "PUBLISHED");
+        verify(questionRepository).findByPartAndDifficultyAndStatus(5, QuestionDifficulty.MEDIUM, QuestionStatus.PUBLISHED);
     }
 
     @Test
     void getRandomQuestions_WithOnlyPart_ReturnsQuestions() {
-        when(questionRepository.findByPartAndStatus(5, "PUBLISHED"))
+        when(questionRepository.findByPartAndStatus(5, QuestionStatus.PUBLISHED))
                 .thenReturn(List.of(mockQuestion));
 
         List<Question> result = practiceService.getRandomQuestions(5, null, 5);
 
         assertEquals(1, result.size());
-        verify(questionRepository).findByPartAndStatus(5, "PUBLISHED");
+        verify(questionRepository).findByPartAndStatus(5, QuestionStatus.PUBLISHED);
     }
 
     @Test
     void getRandomQuestions_NoFilters_ReturnsAllPublishedQuestions() {
-        Question draftQuestion = Question.builder().status("DRAFT").build();
+        Question draftQuestion = Question.builder().status(QuestionStatus.DRAFT).build();
         draftQuestion.setId("q2");
-        when(questionRepository.findAll()).thenReturn(List.of(mockQuestion, draftQuestion));
+        when(questionRepository.findByStatus(QuestionStatus.PUBLISHED)).thenReturn(List.of(mockQuestion));
 
         List<Question> result = practiceService.getRandomQuestions(null, null, 5);
 
@@ -118,7 +121,7 @@ class PracticeServiceTest {
         assertEquals("B", result.getCorrectAnswer());
         assertEquals(10, result.getXpEarned());
 
-        verify(gamificationService).awardXp(eq("user1"), eq(10), eq("ANSWER_CORRECT"), eq("q1"), anyString());
+        verify(eventPublisher).publishEvent(any(XpAwardedEvent.class));
         
         ArgumentCaptor<UserAnswer> captor = ArgumentCaptor.forClass(UserAnswer.class);
         verify(userAnswerRepository).save(captor.capture());
@@ -139,7 +142,7 @@ class PracticeServiceTest {
         assertFalse(result.isCorrect());
         assertEquals(2, result.getXpEarned());
 
-        verify(gamificationService).awardXp(eq("user1"), eq(2), eq("ANSWER_WRONG"), eq("q1"), anyString());
+        verify(eventPublisher).publishEvent(any(XpAwardedEvent.class));
         
         ArgumentCaptor<UserAnswer> captor = ArgumentCaptor.forClass(UserAnswer.class);
         verify(userAnswerRepository).save(captor.capture());

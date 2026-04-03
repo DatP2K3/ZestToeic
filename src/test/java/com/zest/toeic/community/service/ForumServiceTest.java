@@ -6,6 +6,8 @@ import com.zest.toeic.community.repository.ForumCommentRepository;
 import com.zest.toeic.community.repository.ForumPostRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.ForumPostStatus;
+import com.zest.toeic.shared.model.enums.ForumPostType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,7 +38,7 @@ class ForumServiceTest {
         when(postRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         ForumPost post = forumService.createPost("u1", "User1", "Title", "Content", "DISCUSSION", List.of("toeic"));
-        assertEquals("PUBLISHED", post.getStatus());
+        assertEquals(ForumPostStatus.PUBLISHED, post.getStatus());
     }
 
     @Test
@@ -45,7 +47,7 @@ class ForumServiceTest {
         when(postRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         ForumPost post = forumService.createPost("u1", "User1", "Title", "Bad content", "DISCUSSION", null);
-        assertEquals("UNDER_REVIEW", post.getStatus());
+        assertEquals(ForumPostStatus.UNDER_REVIEW, post.getStatus());
     }
 
     @Test
@@ -83,15 +85,15 @@ class ForumServiceTest {
         when(postRepository.findById("p1")).thenReturn(Optional.of(post));
         when(moderationService.checkContent(anyString(), anyString())).thenReturn("CLEAN");
         when(commentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(commentRepository.countByPostIdAndStatus("p1", "PUBLISHED")).thenReturn(1);
+        when(commentRepository.countByPostIdAndStatus("p1", ForumPostStatus.PUBLISHED.name())).thenReturn(1);
 
         ForumComment result = forumService.addComment("p1", "u1", "User1", "Nice!", null);
-        assertEquals("PUBLISHED", result.getStatus());
+        assertEquals(ForumPostStatus.PUBLISHED, result.getStatus());
     }
 
     @Test
     void markBestAnswer_worksForQAPost() {
-        ForumPost post = ForumPost.builder().type("QA").authorId("u1").build();
+        ForumPost post = ForumPost.builder().type(ForumPostType.QA).authorId("u1").build();
         post.setId("p1");
         ForumComment comment = ForumComment.builder().build();
         comment.setId("c1");
@@ -108,7 +110,7 @@ class ForumServiceTest {
 
     @Test
     void markBestAnswer_throwsForDiscussionPost() {
-        ForumPost post = ForumPost.builder().type("DISCUSSION").authorId("u1").build();
+        ForumPost post = ForumPost.builder().type(ForumPostType.DISCUSSION).authorId("u1").build();
         post.setId("p1");
         when(postRepository.findById("p1")).thenReturn(Optional.of(post));
 
@@ -117,7 +119,7 @@ class ForumServiceTest {
 
     @Test
     void markBestAnswer_throwsForNonAuthor() {
-        ForumPost post = ForumPost.builder().type("QA").authorId("u1").build();
+        ForumPost post = ForumPost.builder().type(ForumPostType.QA).authorId("u1").build();
         post.setId("p1");
         when(postRepository.findById("p1")).thenReturn(Optional.of(post));
 
@@ -142,7 +144,7 @@ class ForumServiceTest {
 
     @Test
     void getComments_callsRepository() {
-        when(commentRepository.findByPostIdAndStatusOrderByCreatedAtAsc("p1", "PUBLISHED")).thenReturn(List.of());
+        when(commentRepository.findByPostIdAndStatusOrderByCreatedAtAsc("p1", ForumPostStatus.PUBLISHED.name())).thenReturn(List.of());
         List<ForumComment> result = forumService.getComments("p1");
         assertNotNull(result);
     }

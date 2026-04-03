@@ -6,7 +6,7 @@ import com.zest.toeic.auth.model.User;
 import com.zest.toeic.monetization.model.Subscription;
 import com.zest.toeic.monetization.repository.SubscriptionRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
-import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.SubscriptionTier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +42,7 @@ class SubscriptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockUser = User.builder().subscriptionTier("FREE").build();
+        mockUser = User.builder().subscriptionTier(SubscriptionTier.FREE).build();
         mockUser.setId("u1");
         activePremium = Subscription.builder()
                 .userId("u1")

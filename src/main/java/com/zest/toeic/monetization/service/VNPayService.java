@@ -2,10 +2,12 @@ package com.zest.toeic.monetization.service;
 
 import com.zest.toeic.monetization.model.PaymentTransaction;
 import com.zest.toeic.monetization.repository.PaymentTransactionRepository;
+import com.zest.toeic.shared.model.enums.PaymentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -15,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
+@Transactional
 public class VNPayService {
 
     private static final Logger log = LoggerFactory.getLogger(VNPayService.class);
@@ -93,7 +96,7 @@ public class VNPayService {
                 .userId(userId)
                 .amount(amountVND)
                 .currency("VND")
-                .status("PENDING")
+                .status(PaymentStatus.PENDING)
                 .paymentMethod("VNPAY")
                 .vnpTxnRef(vnpTxnRef)
                 .orderInfo(orderInfo)
@@ -148,7 +151,7 @@ public class VNPayService {
             return response;
         }
 
-        if (!"PENDING".equals(tx.getStatus())) {
+        if (PaymentStatus.PENDING != tx.getStatus()) {
             response.put("RspCode", "02");
             response.put("Message", "Order already confirmed");
             return response;
@@ -160,10 +163,10 @@ public class VNPayService {
         tx.setVnpResponseCode(responseCode);
 
         if ("00".equals(responseCode)) {
-            tx.setStatus("SUCCESS");
+            tx.setStatus(PaymentStatus.SUCCESS);
             log.info("Payment SUCCESS for txnRef {}", vnpTxnRef);
         } else {
-            tx.setStatus("FAILED");
+            tx.setStatus(PaymentStatus.FAILED);
             log.warn("Payment FAILED for txnRef {}, responseCode: {}", vnpTxnRef, responseCode);
         }
 

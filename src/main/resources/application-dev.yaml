@@ -13,9 +13,9 @@ spring:
 
   # ═══════ PostgreSQL (Localhost) ═══════
   datasource:
-    url: jdbc:postgresql://localhost:5433/zesttoeic
-    username: ${POSTGRES_USER:zest}
-    password: ${POSTGRES_PASSWORD:zest_secret}
+    url: jdbc:postgresql://localhost:5433/zesttoeic #docker
+    username: ${POSTGRES_USER:zest} #docker
+    password: ${POSTGRES_PASSWORD:zest_secret} #docker
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 5000

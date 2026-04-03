@@ -1,6 +1,8 @@
 package com.zest.toeic.practice.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.QuestionDifficulty;
+import com.zest.toeic.shared.model.enums.QuestionStatus;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,7 +17,7 @@ import java.util.List;
 public class Question extends BaseDocument {
 
     private int part; // 1-7
-    private String difficulty; // EASY, MEDIUM, HARD
+    private QuestionDifficulty difficulty;
     private String category; // GRAMMAR, VOCABULARY, LISTENING, READING
     private String content;
     private String audioUrl;
@@ -25,7 +27,7 @@ public class Question extends BaseDocument {
     private String explanation;
 
     @Builder.Default
-    private String status = "PUBLISHED";
+    private QuestionStatus status = QuestionStatus.PUBLISHED;
 
     private String source; // study4, ai_generated, manual
     private Double aiConfidence;

@@ -5,6 +5,7 @@ import com.zest.toeic.auth.repository.UserRepository;
 import com.zest.toeic.community.model.Friend;
 import com.zest.toeic.community.repository.FriendRepository;
 import com.zest.toeic.gamification.dto.LeaderboardEntry;
+import com.zest.toeic.shared.model.enums.FriendStatus;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,7 +117,7 @@ class LeaderboardServiceTest {
 
     @Test
     void getFriendsLeaderboard_shouldReturnOnlyFriends() {
-        Friend friend = Friend.builder().senderId("u1").receiverId("u2").status("ACCEPTED").build();
+        Friend friend = Friend.builder().senderId("u1").receiverId("u2").status(FriendStatus.ACCEPTED).build();
         when(friendRepository.findAcceptedFriends("u1")).thenReturn(List.of(friend));
 
         Document doc1 = new Document("_id", "u1").append("totalXp", 1500L);

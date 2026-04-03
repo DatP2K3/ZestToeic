@@ -11,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/forum")
@@ -28,14 +28,10 @@ public class ForumController {
     @PostMapping("/posts")
     @Operation(summary = "Tạo bài viết mới (Discussion hoặc Q&A)")
     public ResponseEntity<ApiResponse<ForumPost>> createPost(
-            Authentication auth, @RequestBody Map<String, Object> body) {
-        String title = (String) body.get("title");
-        String content = (String) body.get("content");
-        String type = (String) body.getOrDefault("type", "DISCUSSION");
-        @SuppressWarnings("unchecked")
-        List<String> tags = (List<String>) body.get("tags");
+            Authentication auth, @Valid @RequestBody com.zest.toeic.community.dto.CreateForumPostRequest request) {
+        String type = request.type() != null ? request.type() : "DISCUSSION";
         return ResponseEntity.ok(ApiResponse.success(
-                forumService.createPost(auth.getName(), auth.getName(), title, content, type, tags)));
+                forumService.createPost(auth.getName(), auth.getName(), request.title(), request.content(), type, request.tags())));
     }
 
     @GetMapping("/posts")
@@ -63,10 +59,10 @@ public class ForumController {
     @PostMapping("/posts/{postId}/comments")
     @Operation(summary = "Thêm comment (support threaded reply)")
     public ResponseEntity<ApiResponse<ForumComment>> addComment(
-            Authentication auth, @PathVariable String postId, @RequestBody Map<String, String> body) {
+            Authentication auth, @PathVariable String postId, @Valid @RequestBody com.zest.toeic.community.dto.AddForumCommentRequest request) {
         return ResponseEntity.ok(ApiResponse.success(
                 forumService.addComment(postId, auth.getName(), auth.getName(),
-                        body.get("content"), body.get("parentId"))));
+                        request.content(), request.parentId())));
     }
 
     @GetMapping("/posts/{postId}/comments")

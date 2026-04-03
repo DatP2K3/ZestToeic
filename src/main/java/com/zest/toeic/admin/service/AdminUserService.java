@@ -3,12 +3,15 @@ package com.zest.toeic.admin.service;
 import com.zest.toeic.auth.model.User;
 import com.zest.toeic.auth.repository.UserRepository;
 import com.zest.toeic.shared.exception.ResourceNotFoundException;
+import com.zest.toeic.shared.model.enums.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AdminUserService {
 
     private final UserRepository userRepository;
@@ -24,7 +27,7 @@ public class AdminUserService {
             return userRepository.findByDisplayNameContainingIgnoreCase(search, pageable);
         }
         if (status != null) {
-            return userRepository.findByStatus(status, pageable);
+            return userRepository.findByStatus(UserStatus.valueOf(status), pageable);
         }
         return userRepository.findAll(pageable);
     }
@@ -36,19 +39,19 @@ public class AdminUserService {
 
     public User suspendUser(String id, String reason) {
         User user = getUser(id);
-        user.setStatus("SUSPENDED");
+        user.setStatus(UserStatus.SUSPENDED);
         return userRepository.save(user);
     }
 
     public User banUser(String id) {
         User user = getUser(id);
-        user.setStatus("BANNED");
+        user.setStatus(UserStatus.BANNED);
         return userRepository.save(user);
     }
 
     public User activateUser(String id) {
         User user = getUser(id);
-        user.setStatus("ACTIVE");
+        user.setStatus(UserStatus.ACTIVE);
         return userRepository.save(user);
     }
 }

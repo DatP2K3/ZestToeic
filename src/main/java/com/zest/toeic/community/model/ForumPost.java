@@ -1,9 +1,12 @@
 package com.zest.toeic.community.model;
 
 import com.zest.toeic.shared.model.BaseDocument;
+import com.zest.toeic.shared.model.enums.ForumPostStatus;
+import com.zest.toeic.shared.model.enums.ForumPostType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +30,7 @@ public class ForumPost extends BaseDocument {
     private String authorName;
 
     @Builder.Default
-    private String type = "DISCUSSION"; // DISCUSSION | QA
+    private ForumPostType type = ForumPostType.DISCUSSION;
 
     @Builder.Default
     private List<String> tags = new ArrayList<>();
@@ -50,5 +54,5 @@ public class ForumPost extends BaseDocument {
     private boolean resolved = false;
 
     @Builder.Default
-    private String status = "PUBLISHED"; // PUBLISHED, HIDDEN, UNDER_REVIEW, DELETED
+    private ForumPostStatus status = ForumPostStatus.PUBLISHED;
 }

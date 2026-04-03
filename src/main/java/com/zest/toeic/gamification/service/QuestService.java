@@ -3,15 +3,18 @@ package com.zest.toeic.gamification.service;
 import com.zest.toeic.gamification.model.DailyQuest;
 import com.zest.toeic.gamification.repository.DailyQuestRepository;
 import com.zest.toeic.shared.exception.BadRequestException;
+import com.zest.toeic.shared.model.enums.QuestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
 @Service
+@Transactional
 public class QuestService {
 
     private static final Logger log = LoggerFactory.getLogger(QuestService.class);
@@ -36,7 +39,7 @@ public class QuestService {
         DailyQuest dq = getOrGenerateQuests(userId);
 
         for (DailyQuest.Quest quest : dq.getQuests()) {
-            if (quest.getType().equals(questType) && !quest.isCompleted()) {
+            if (quest.getType().name().equals(questType) && !quest.isCompleted()) {
                 quest.setProgress(Math.min(quest.getProgress() + amount, quest.getTarget()));
                 if (quest.getProgress() >= quest.getTarget()) {
                     quest.setCompleted(true);
@@ -90,21 +93,21 @@ public class QuestService {
 
         List<DailyQuest.Quest> quests = List.of(
                 DailyQuest.Quest.builder()
-                        .type("PRACTICE_QUESTIONS")
+                        .type(QuestType.PRACTICE_QUESTIONS)
                         .description("Trả lời " + practiceTarget + " câu hỏi")
                         .target(practiceTarget)
                         .progress(0).completed(false).claimed(false)
                         .xpReward(50)
                         .build(),
                 DailyQuest.Quest.builder()
-                        .type("REVIEW_FLASHCARDS")
+                        .type(QuestType.REVIEW_FLASHCARDS)
                         .description("Ôn " + flashcardTarget + " flashcards")
                         .target(flashcardTarget)
                         .progress(0).completed(false).claimed(false)
                         .xpReward(30)
                         .build(),
                 DailyQuest.Quest.builder()
-                        .type("COMPLETE_TEST")
+                        .type(QuestType.COMPLETE_TEST)
                         .description("Hoàn thành 1 bài test")
                         .target(1)
                         .progress(0).completed(false).claimed(false)
